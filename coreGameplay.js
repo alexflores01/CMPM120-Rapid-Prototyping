@@ -100,7 +100,7 @@ class Gameplay extends Phaser.Scene{
         }
 
         if(this.cursor.up.isDown){
-            this.matter.body.setVelocity(this.rollyPloy, {x: this.rollyPloy.velocity.x, y: -10});
+            this.matter.body.setVelocity(this.rollyPloy, {x: this.rollyPloy.velocity.x, y: -11});
         }
 
         this.rollyPloyVisual.x = this.rollyPloy.position.x;
@@ -111,9 +111,10 @@ class Gameplay extends Phaser.Scene{
     }
 }
 const config = {
-    type: Phaser.AUTO,
-    width: 800,
-    height: 600,
+    mode: Phaser.Scale.FIT,
+    autoCenter: Phaser.Scale.CENTER_BOTH,
+    width: 1920,
+    height: 1080,
     physics: {
         default: 'matter',
         matter: {
