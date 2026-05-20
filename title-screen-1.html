@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="eng">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Title Screen</title>
+        <script src="lib/phaser.js"></script>
+        <script>
+            class Title extends Phaser.Scene{
+    constructor(){
+        super('title');
+    }
+    create(){
+        this.cameras.main.setBackgroundColor('#1fb2f1');
+        this.add.text(150, 100, 'Roly Poly: To the End', {
+            fontSize: '40px',
+            fill: '#ffffff'
+        });
+        this.clickText =this.add.text(240, 300, 'Click to Start', {
+            fontSize: '40px',
+            fill: '#ffffff',
+            bold: true
+        })
+        this.tweens.add({
+            targets: this.clickText,
+            alpha: 0.5,
+            duration: 1000,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut'
+        });
+    }
+};
+const config = {
+    type: Phaser.AUTO,
+    width: 800,
+    height: 600,
+    scene: [Title],
+}
+const game = new Phaser.Game(config);
+
+        </script>
+    </head>
+</html>
