@@ -4,19 +4,20 @@ class Title extends Phaser.Scene{
         super('title');
     }
     create(){
-        this.cameras.main.setBackgroundColor('#1fb2f1');
-        this.add.text(150, 100, 'Roly Poly: To the End', {
-            fontSize: '40px',
+        this.cameras.main.setBackgroundColor('#f97bde');
+        this.add.text(500, 300, 'Roly Poly: To the End', {
+            fontSize: '72px',
             fill: '#ffffff'
         });
-        this.clickText =this.add.text(240, 300, 'Click to Start', {
-            fontSize: '36px',
+        this.clickText =this.add.text(650, 600, 'Click to Start', {
+            fontSize: '64px',
             fill: '#ffffff'
         })
-        .setInteractive()
-        .on('pointerdown', () => {
+
+        this.input.on('pointerdown', () => {
             this.scene.start('gameplay')
         });
+
         this.tweens.add({
             targets: this.clickText,
             alpha: 0.5,
@@ -36,80 +37,140 @@ class Gameplay extends Phaser.Scene{
     }
 
     create(){
-        this.cameras.main.setBackgroundColor('#0a9cd5')
-        this.matter.world.setBounds(1, 1, 799, 599);
-        this.rollyPloy = this.matter.add.circle(400, 300, 20, 
-            {restitution: 0.9}
-        );
-        this.rollyPloyVisual = this.add.image(this.rollyPloy.position.x, this.rollyPloy.position.y, 'rolly')
-        .setScale(0.1);
-
-        this.snail1 = this.matter.add.image(750, 550, 'snail', null, 
-            {isStatic: true, isSensor: true}
-        )
-        .setScale(0.05);
-        this.snail1.body.label = 'snail1';
-         this.snail2 = this.matter.add.image(50, 550, 'snail', null, 
-            {isStatic: true, isSensor: true}
-        )
-        .setScale(0.05);
-        this.snail2.body.label = 'snail2';
+        this.cameras.main.setBackgroundColor('#f97bde')
         
+        //player
+        //setCollideWorldBounds stops it flying off the edge of the canvas
+        //creates an invisible wall on all 4 edges of the canvas top bottom left right
+        this.rollyPoly = this.physics.add.sprite(0, 1080, 'rolly')
+            .setScale(0.3)
+            .setBodySize(540, 367)
+            .setFlipX(true)
+            .setCollideWorldBounds(true);
+
+        //jump input
+        //pointerdown fires for both mouse clicks and finger taps
+        this.input.on('pointerdown', () => {
+            if(this.rollyPoly.body.blocked.down){
+                this.rollyPoly.setVelocityY(-500);
+            }
+        })
+        this.isAlive = true;
+
+        this.snail1 = this.physics.add.sprite(900, 1080, 'snail')
+            .setScale(0.2)
+            .setBodySize(1500, 1000)
+            .setCollideWorldBounds(true);
+
+        this.snail2 = this.physics.add.sprite(920, 1080, 'snail')
+            .setScale(0.2)
+            .setBodySize(1500, 1000)
+            .setCollideWorldBounds(true);
 
         this.tweens.add({
             targets: this.snail1,
-            x: 50,
-            duration: 8000, 
+            x: 10,
+            duration: 3000, 
             yoyo: true,
             repeat: -1,
-            ease: 'linear'
-        });
+            ease: 'Linear',
+            onYoyo: () => {
+                this.snail1.setFlipX(true);
+            },
+            onRepeat: () => {
+                this.snail1.setFlipX(false);
+            }
+        })
+        
+
         this.tweens.add({
             targets: this.snail2,
-            x: 750,
-            duration: 8000, 
+            x: 1920,
+            duration: 3000, 
             yoyo: true,
             repeat: -1,
-            ease: 'linear'
-        });
+            ease: 'Linear',
+            onStart: () => {
+                this.snail2.setFlipX(true);
+            },
+            onYoyo: () => {
+                this.snail2.setFlipX(false);
+            },
+            onRepeat: () => {
+                this.snail2.setFlipX(true);
+            }
+        })
 
-        this.matter.world.on('collisionstart', (event, body1, body2) => {
-            if(body1.label ==='snail1' && body2 === this.rollyPloy ||
-                body2.label === 'snail1'&& body1 === this.rollyPloy){
-                    this.scene.start('title');
-                }
-        });
-        this.matter.world.on('collisionstart', (event, body1, body2) => {
-            if(body1.label ==='snail2' && body2 === this.rollyPloy ||
-                body2.label === 'snail2'&& body1 === this.rollyPloy){
-                    this.scene.start('title');
-                }
-        });
 
-        
-        
+        this.physics.add.overlap(this.rollyPoly, this.snail1, () => {
+            if(this.rollyPoly.body.blocked.down){
+                this.hitSnail();
+            }
+        })
+         this.physics.add.overlap(this.rollyPoly, this.snail2, () => {
+            if(this.rollyPoly.body.blocked.down){
+                this.hitSnail();
+            }
+        })
+
+        //spacebar/up arrow as desktop fallback
         this.cursor = this.input.keyboard.createCursorKeys();
+        
+        
+        }
+
+        hitSnail(){
+            this.isAlive = false;
+
+            this.tweens.add({
+                targets: this.rollyPoly,
+                alpha: 0,
+                duration: 1000,
+            });
+
+            this.rollyPoly.setVelocityX(0);
+            this.rollyPoly.setVelocityY(0);
+            const messageCard = this.add.rectangle(950, 500, 700, 700, 0x7CD4F7);
+            this.add.text(690, 500, 'Watch out for snails!', {
+                fontSize: '42px',
+                fillStyle: '#ecf0ef'
+            });
+            this.time.delayedCall(3000, () => {
+                this.scene.start('title');
+            });
         }
 
     update(){
-        if(this.cursor.left.isDown){
-            this.matter.body.setVelocity(this.rollyPloy, {x: -5, y: this.rollyPloy.velocity.y});
-        }
-        if(this.cursor.right.isDown){
-            this.matter.body.setVelocity(this.rollyPloy, {x: 5, y:this.rollyPloy.velocity.y});
-        }
+        //Auto run
+        if(this.isAlive){
+        this.rollyPoly.setVelocityX(290);
+    
+        //keyboard Jump
+        if(Phaser.Input.Keyboard.JustDown(this.cursor.up) ||
+            Phaser.Input.Keyboard.JustDown(this.cursor.space)
+        ) {
+            if(this.rollyPoly.body.blocked.down){
+                this.rollyPoly.setVelocityY(-450);
+            };
+        };
 
-        if(this.cursor.up.isDown){
-            this.matter.body.setVelocity(this.rollyPloy, {x: this.rollyPloy.velocity.x, y: -11});
+        //win condition
+        if(this.rollyPoly.x >= 1800){
+            const messageCard2 = this.add.rectangle(950, 500, 700, 700, 0x7CD4F7);
+            this.add.text(730, 500, "That's good work!", {
+                fontSize: '42px',
+                fillStyle: '#ecf0ef'
+            });
+            this.time.delayedCall(1500, () => {
+                this.scene.start('title');
+            });
         }
-
-        this.rollyPloyVisual.x = this.rollyPloy.position.x;
-        this.rollyPloyVisual.y = this.rollyPloy.position.y;
-        this.rollyPloyVisual.rotation = this.rollyPloy.angle;
-
+    }
+        
 
     }
 }
+
 const config = {
     width: 1920,
     height: 1080,
@@ -120,9 +181,9 @@ const config = {
     },
 
     physics: {
-        default: 'matter',
-        matter: {
-            gravity: {y: 1},
+        default: 'arcade',
+        arcade: {
+            gravity: {y: 300},
             debug: true,
         },
     },
